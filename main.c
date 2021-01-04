@@ -22,10 +22,12 @@ int main(int argc, char* argv[]) {
 	
 	// TODO: Optimize this selection mechanism for selecting which functions
 	if(!strcmp(argv[1],"i")) {
-		f = fopen("MOCKUP.PZI","rb");
+		f = fopen(argv[2],"rb");
+		if(f == NULL) { print_usage(); return -1; }
 		pzi_data *pd = malloc(sizeof(pzi_data));
 		memset(pd,0,sizeof(pzi_data)); 
 		fread(pd,sizeof(pzi_data),1,f);
+		fclose(f);
 		for(int i=0; i<128; i++ ) {
 		printf("%03d %08X %08X %08X %08X %6d\n",i,
 				pd->pcmdata[i].startaddr,
@@ -35,6 +37,44 @@ int main(int argc, char* argv[]) {
 				pd->pcmdata[i].freq
 			);
 		}
-
+		free(pd);
 	}
+	if(!strcmp(argv[1],"a")) { // Append requires three arguments
+		if(argc < 4) {
+			printf("Usage: a <pzi file> <file to append>\n");
+			return -2;
+		}
+		FILE *append_file;
+		
+		f = fopen(argv[2],"rb");
+		if(f == NULL) {
+			printf("File Open Error, is filename correct?\n");
+			return -3;
+		}
+		append_file = fopen(argv[3],"rb");
+		if(append_file == NULL) {
+			printf("File Open Error, is filename correct?\n");
+			return -3;
+		}
+		pzi_data *pd = malloc(sizeof(pzi_data));
+		memset(pd,0,sizeof(pzi_data));
+		fread(pd,sizeof(pzi_data),1,f);
+		fclose(f);
+
+		fseek(append_file, 0L, SEEK_END);
+		uint64_t fsz = ftell(append_file);
+		rewind(append_file);
+		
+		printf("DBG: filesize: %ld",fsz);
+
+		// Find Next Empty thing. probably better to seek that
+		// Loop point is 0
+		// End address is 0
+		
+
+
+
+		
+	}
+
 }
